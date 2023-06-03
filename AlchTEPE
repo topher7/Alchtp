@@ -1,0 +1,125 @@
+import java.awt.*;
+import java.util.Random;
+import net.runelite.client.plugins.Plugin;
+import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.PluginInstantiationException;
+import net.runelite.client.plugins.PluginManager;
+import net.runelite.client.plugins.PluginType;
+import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.game.ItemManager;
+import net.runelite.client.game.ItemStack;
+import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
+import net.runelite.api.events.ItemClick;
+import javax.inject.Inject;
+import net.runelite.api.ItemID;
+
+@PluginDescriptor(
+    name = "Auto Alch and Teleport Plugin",
+    description = "Automatically alchs and teleports",
+    type = PluginType.EXTERNAL
+)
+
+public class AutoAlchPlugin extends Plugin {
+    private final Robot robot = new Robot();
+    private final Random random = new Random();
+    private int minDelay = 1000;
+    private int maxDelay = 3000;
+    private int antibanChance = 20; // 20% chance of performing an anti-ban action
+
+    @Inject
+    private OverlayManager overlayManager;
+
+    @Inject
+    private InfoBoxManager infoBoxManager;
+
+    @Inject
+    private ItemManager itemManager;
+
+    @Override
+    protected void startUp() throws Exception {
+        PluginManager.getInstance().registerMouseListener(this);
+    }
+
+    @Override
+    protected void shutDown() throws Exception {
+        PluginManager.getInstance().unregisterMouseListener(this);
+    }
+
+    @Subscribe
+    public void onInventoryItemClick(ItemClick event) {
+        ItemStack item = event.getItemStack();
+        if (item.getId() == ItemID.YEW_LONGBOW) {
+            robot.mouseMove(event.getCanvasPosition().getX(), event.getCanvasPosition().getY());
+            robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+            robot.delay(50);
+            robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+            robot.delay(2000);
+            robot.keyPress(KeyEvent.VK_ESCAPE);
+            robot.delay(50);
+            robot.keyRelease(KeyEvent.VK_ESCAPE);
+            robot.delay(1000);
+            robot.keyPress(KeyEvent.VK_CONTROL);
+            robot.keyPress(KeyEvent.VK_C);
+            robot.delay(50);
+            robot.keyRelease(KeyEvent.VK_C);
+            robot.keyRelease(KeyEvent.VK_CONTROL);
+            robot.delay(1000);
+            robot.keyPress(KeyEvent.VK_F3);
+            robot.delay(50);
+            robot.keyRelease(KeyEvent.VK_F3);
+            robot.delay(1000);
+            robot.keyPress(KeyEvent.VK_2);
+            robot.delay(50);
+            robot.keyRelease(KeyEvent.VK_2);
+            robot.delay(1000);
+            robot.keyPress(KeyEvent.VK_ENTER);
+            robot.delay(50);
+            robot.keyRelease(KeyEvent.VK_ENTER);
+
+            // Wait for a random amount of time between minDelay and maxDelay
+            int delay = random.nextInt(maxDelay - minDelay) + minDelay;
+            robot.delay(delay);
+
+            // Perform an anti-ban action with a certain probability
+            int chance = random.nextInt(100) + 1;
+            if (chance <= antibanChance) {
+                performAntibanAction();
+            }
+        }
+    }
+    
+    private void performAntibanAction() {
+        // Randomly move the mouse a short distance
+        int dx = random.nextInt(50) - 25;
+        int dy = random.nextInt(50) - 25;
+        robot.mouseMove(MouseInfo.getPointerInfo().getLocation().x + dx, MouseInfo.getPointerInfo().getLocation().y + dy);
+        robot.delay(100);
+
+        // Randomly press a key
+        int key = random.nextInt(26) + 65; // ASCII code for A-Z
+        robot.keyPress(key);
+        robot.delay(50);
+        robot.keyRelease
+(key);
+        robot.delay(100);
+
+        // Randomly type a short message
+        String message = generateRandomString(10, 20);
+        robot.type(message);
+        robot.delay(500);
+
+        // Move the mouse back to the original position
+        robot.mouseMove(MouseInfo.getPointerInfo().getLocation().x - dx, MouseInfo.getPointerInfo().getLocation().y - dy);
+        robot.delay(100);
+    }
+
+    private String generateRandomString(int minLength, int maxLength) {
+        int length = random.nextInt(maxLength - minLength) + minLength;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int c = random.nextInt(26) + 97; // ASCII code for a-z
+            sb.append((char) c);
+        }
+        return sb.toString();
+    }
+}
